@@ -36,6 +36,8 @@ TicksToRPMConverter ticksToRPMConverter;
 RPMToMPHConverter rpmToMPHConverter(RADIUS);
 MPHDisplay mphDisplay(&tft);
 
+const int INTERRUPT_PIN;
+
 void setup() {
   // put your setup code here, to run once:
   tft.begin();
@@ -43,6 +45,10 @@ void setup() {
     pinMode(TFT_BL, OUTPUT);
     digitalWrite(TFT_BL, HIGH); // Backlight on
   #endif // end TFT_BL
+
+  //system interrupt setup
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), interrupt, FALLING);
 }
 
 void loop() {
@@ -50,4 +56,8 @@ void loop() {
   float rpm = ticksToRPMConverter.READ_RPM();
   float mph = rpmToMPHConverter.Convert(rpm);
   mphDisplay.displayMPH(mph);
+}
+
+void interrupt() {
+  ticksToRPMConverter.READ_RPM();
 }
