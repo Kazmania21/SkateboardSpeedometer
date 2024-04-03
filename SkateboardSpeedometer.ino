@@ -1,4 +1,6 @@
-#include "src/lib/Adafruit_GC9A01A-main/Adafruit_GC9A01A.h"
+#include "SPI.h"
+#include "Adafruit_GFX.h"
+#include "Adafruit_GC9A01A.h"
 #include "src/TicksToRPM.h"
 #include "src/RPMToMPH.h"
 #include "src/DisplayMPH.h"
@@ -32,7 +34,7 @@ const float RADIUS = .2; //in feet
 Adafruit_GC9A01A tft(TFT_CS, TFT_DC);
 TicksToRPMConverter ticksToRPMConverter;
 RPMToMPHConverter rpmToMPHConverter(RADIUS);
-MPHDisplay mphDisplay(tft);
+MPHDisplay mphDisplay(&tft);
 
 void setup() {
   // put your setup code here, to run once:
