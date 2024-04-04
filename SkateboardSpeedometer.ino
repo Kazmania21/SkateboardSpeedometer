@@ -22,21 +22,24 @@
 // Other RP2040-based boards might not have "D" pin defines as shown above
 // and will use GPIO bit numbers. On non-RP2040 boards, you can usually use
 // pin numbers silkscreened on the board.
-  #define TFT_DC  9
+  #define TFT_DC  7
   #define TFT_CS 10
 // If display breakout has a backlight control pin, that can be defined here
 // as TFT_BL. On some breakouts it's not needed, backlight is always on.
 
 #endif
 
-const float RADIUS = .2; //in feet
+const float MOTOR_DIAMETER = .3;
+const float WHEEL_DIAMETER = .4;
+const float RADIUS = WHEEL_DIAMETER/2; //in feet
 
 Adafruit_GC9A01A tft(TFT_CS, TFT_DC);
-TicksToRPMConverter ticksToRPMConverter;
+TicksToRPMConverter ticksToRPMConverter(MOTOR_DIAMETER, WHEEL_DIAMETER);
 RPMToMPHConverter rpmToMPHConverter(RADIUS);
 MPHDisplay mphDisplay(&tft);
 
-const int INTERRUPT_PIN;
+const int INTERRUPT_PIN = 2;
+const int UPDATE_RATE = 5;
 
 void setup() {
   // put your setup code here, to run once:
@@ -49,15 +52,25 @@ void setup() {
   //system interrupt setup
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), interrupt, FALLING);
+
+  mphDisplay.displayMPH(0);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  delay(5000);
   float rpm = ticksToRPMConverter.READ_RPM();
   float mph = rpmToMPHConverter.Convert(rpm);
   mphDisplay.displayMPH(mph);
+  
+
+  /*mphDisplay.displayMPH(23);
+  delay(5000);
+  mphDisplay.displayMPH(3);
+  delay(5000);*/
 }
 
 void interrupt() {
-  ticksToRPMConverter.READ_RPM();
+  ticksToRPMConverter.increment_counter();
+  //mphDisplay.displayMPH(15);
 }

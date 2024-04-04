@@ -6,44 +6,54 @@ class TicksToRPMConverter {
     int new_pulse_flag;
     Chrono timer;
     int startTime = timer.elapsed();
+    int motorDiameter;
+    int wheelDiameter;
+
+    TicksToRPMConverter(int _motorDiameter, int _wheelDiameter) {
+        motorDiameter = _motorDiameter;
+        wheelDiameter = _wheelDiameter;
+    }
 
     float READ_RPM(){
-        float RPM;
-
-        int Ts;
-
         int stopTime = timer.elapsed();
 
         new_pulse_flag = 1; //tells the RPM ISR that we just read the RPM
 
-        if(stopTime > startTime) { //ensures that Ts is a positive number
-            Ts = 0xFFFFFFFF - stopTime + startTime;
-        }
+        int Ts = CreateTs(stopTime);
 
-        else {
-            Ts = startTime - stopTime;
-        }
+        float MOTOR_RPM = GetMotorRPM(Ts);
 
+        //convert motor RPM to wheel RPM
+        float WHEEL_RPM = (motorDiameter/wheelDiameter) * MOTOR_RPM;
 
-        if(Ts == 0) { //ensures that if no encoder pulses hit, we set RPM to 0
-            RPM = 0;
-        }
-
-        else {
-            RPM = counter * (6000000000.0/( (float)Ts * 7 * 20));
-        }
-
+        counter = 0;
         timer.restart();
         int startTime = timer.elapsed();
 
-        return RPM;
+        return WHEEL_RPM;
+    }
+
+    int CreateTs(int stopTime) {
+        if(stopTime > startTime) { //ensures that Ts is a positive number
+            return 0xFFFFFFFF - stopTime + startTime;
+        }
+
+        return startTime - stopTime;
+    }
+
+    float GetMotorRPM(int Ts) {
+        if(Ts == 0) { //ensures that if no encoder pulses hit, we set RPM to 0
+            return 0;
+        }
+
+        return counter * (6000000000.0/( (float)Ts * 7 * 20));
     }
 
     void increment_counter() {
         counter++;
     }
 
-    void get_time_since_start() {
+    int get_time_since_start() {
         return timer.elapsed();
     }
 };

@@ -6,15 +6,20 @@ class MPHDisplay {
     public:
     Adafruit_GC9A01A* tft;
     
-    MPHDisplay(Adafruit_GC9A01A* tft) {
-        tft = tft;
+    MPHDisplay(Adafruit_GC9A01A* _tft) {
+        tft = _tft;
     }
 
-    void displayMPH(float mph) {
+    void displayMPH(int mph) {
         tft->fillScreen(GC9A01A_BLUE);
+        tft->setCursor(100, 90);
+        if (mph < 10){
+            tft->setCursor(110, 90);
+        }
         tft->setTextColor(GC9A01A_WHITE);  
-        tft->setTextSize(1);
+        tft->setTextSize(3);
         tft->println(mph);
+        tft->setCursor(90, 120);
         tft->println("MPH");
     }
 };
