@@ -1,3 +1,6 @@
+#ifndef COUNTER_H
+#define COUNTER_H
+
 class Counter {
     public:
     int count = 0;
@@ -10,3 +13,5 @@ class Counter {
         count = 0;
     };
 };
+
+#endif

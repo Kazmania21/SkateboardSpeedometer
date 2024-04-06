@@ -4,6 +4,9 @@
 #include "src/TicksToRPM.h"
 #include "src/RPMToMPH.h"
 #include "src/DisplayMPH.h"
+#include "src/Counter.h"
+#include "src/Timer.h"
+#include "src/CalculateRPM.h"
 
 // Define pins for display interface. You'll probably need to edit this for
 // your own needs:
@@ -29,16 +32,19 @@
 
 #endif
 
-const float MOTOR_DIAMETER = .3;
-const float WHEEL_DIAMETER = .4;
+const float MOTOR_DIAMETER = .01;
+const float WHEEL_DIAMETER = .14;
 const float RADIUS = WHEEL_DIAMETER/2; //in feet
 
 Adafruit_GC9A01A tft(TFT_CS, TFT_DC);
-TicksToRPMConverter ticksToRPMConverter(MOTOR_DIAMETER, WHEEL_DIAMETER);
+Counter counter;
+Timer timer;
+RPMCalculator rpmCalculator(MOTOR_DIAMETER, WHEEL_DIAMETER, &counter);
+TicksToRPMConverter ticksToRPMConverter(&counter, &timer, &rpmCalculator);
 RPMToMPHConverter rpmToMPHConverter(RADIUS);
 MPHDisplay mphDisplay(&tft);
 
-const int INTERRUPT_PIN = 2;
+const int INTERRUPT_PIN = 3;
 const int UPDATE_RATE = 5;
 
 void setup() {
@@ -58,19 +64,26 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  delay(5000);
-  float rpm = ticksToRPMConverter.READ_RPM();
-  float mph = rpmToMPHConverter.Convert(rpm);
-  mphDisplay.displayMPH(mph);
+  if (timer.elapsed() >= 5000){
+    //mphDisplay.displayMPH(timer.elapsed());
+    float rpm = ticksToRPMConverter.READ_RPM();
+    float mph = rpmToMPHConverter.Convert(rpm);
+    mphDisplay.displayMPH(mph);
+  }
   
 
   /*mphDisplay.displayMPH(23);
   delay(5000);
   mphDisplay.displayMPH(3);
   delay(5000);*/
+
+  /*if ((counter.count % 90) == 0) {
+    mphDisplay.displayMPH(counter.count);
+  }*/
 }
 
 void interrupt() {
-  ticksToRPMConverter.increment_counter();
+  counter.increment();
+  //ticksToRPMConverter.increment_counter();
   //mphDisplay.displayMPH(15);
 }

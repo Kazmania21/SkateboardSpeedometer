@@ -1,3 +1,6 @@
+#ifndef TIMER_H
+#define TIMER_H
+
 #include "Chrono.h"
 
 class Timer {
@@ -14,3 +17,5 @@ class Timer {
         startTime = timer.elapsed();
     }
 };
+
+#endif

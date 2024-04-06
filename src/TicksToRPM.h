@@ -1,34 +1,41 @@
-#include "Chrono.h"
+#include "./Counter.h"
+#include "./Timer.h"
+#include "./CalculateRPM.h"
+#include "Timer.h"
 
 class TicksToRPMConverter {
     public:
-    int counter = 0;
+    Counter* counter = 0;
     int new_pulse_flag;
-    Chrono timer;
-    int startTime = timer.elapsed();
+    Timer* timer;
+    int startTime = 0;
     int motorDiameter;
     int wheelDiameter;
+    RPMCalculator* rpmCalculator;
+    //int _motorDiameter, int _wheelDiameter,
 
-    TicksToRPMConverter(int _motorDiameter, int _wheelDiameter) {
-        motorDiameter = _motorDiameter;
-        wheelDiameter = _wheelDiameter;
+    TicksToRPMConverter(Counter* _counter, Timer* _timer, RPMCalculator* _rpmCalculator) {
+        /*motorDiameter = _motorDiameter;
+        wheelDiameter = _wheelDiameter;*/
+        counter = _counter;
+        timer = _timer;
+        rpmCalculator = _rpmCalculator;
     }
 
     float READ_RPM(){
-        int stopTime = timer.elapsed();
+        int stopTime = timer->elapsed();
 
         new_pulse_flag = 1; //tells the RPM ISR that we just read the RPM
 
-        int Ts = CreateTs(stopTime);
+        //int Ts = CreateTs(stopTime);
 
-        float MOTOR_RPM = GetMotorRPM(Ts);
+        float MOTOR_RPM = rpmCalculator->GetMotorRPM(stopTime);
 
         //convert motor RPM to wheel RPM
-        float WHEEL_RPM = (motorDiameter/wheelDiameter) * MOTOR_RPM;
+        float WHEEL_RPM = rpmCalculator->GetWheelRPM(MOTOR_RPM);
 
-        counter = 0;
-        timer.restart();
-        int startTime = timer.elapsed();
+        counter->reset();
+        timer->restart();
 
         return WHEEL_RPM;
     }
@@ -41,7 +48,7 @@ class TicksToRPMConverter {
         return startTime - stopTime;
     }
 
-    float GetMotorRPM(int Ts) {
+    /*float GetMotorRPM(int Ts) {
         if(Ts == 0) { //ensures that if no encoder pulses hit, we set RPM to 0
             return 0;
         }
@@ -55,5 +62,5 @@ class TicksToRPMConverter {
 
     int get_time_since_start() {
         return timer.elapsed();
-    }
+    }*/
 };
